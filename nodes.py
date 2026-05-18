@@ -54,6 +54,8 @@ class ChordLoadModel(io.ComfyNode):
         config = OmegaConf.load(os.path.join(os.path.dirname(__file__), "config/chord.yaml"))
         model = ChordModel(config)
         sd = load_torch_file(ckpt_path, safe_load=True)
+        # Fix transformers>=5.0 CLIPTextModel state_dict key flattening (issue #27)
+        sd = {k.replace("text_encoder.text_model.", "text_encoder."): v for k, v in sd.items()}
         try:
             model.load_state_dict(sd)
         except RuntimeError as e:
